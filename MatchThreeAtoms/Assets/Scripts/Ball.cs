@@ -3,6 +3,31 @@ using System.Collections;
 
 public class Ball : MonoBehaviour
 {
+    public enum BALL_TYPE
+    {
+        NONE = -1,
+        TYPE_1,
+        TYPE_2,
+        TYPE_3,
+        TYPE_4,
+        TYPE_5,
+        TYPE_6,
+        TYPE_7,
+        TYPE_8,
+        TYPE_9,
+        TYPE_10,
+        TYPE_11,
+        TYPE_12,
+        TYPE_13,
+        TYPE_14,
+        TYPE_15,
+        TYPE_16,
+        TYPE_17,
+        TYPE_18,
+        TYPE_19,
+        TYPE_20
+    };
+
 
     public GameObject[] colorsGO;
 
@@ -12,7 +37,10 @@ public class Ball : MonoBehaviour
     [HideInInspector]
     public int column;
 
-    private Vector3 tilePosition;
+    [HideInInspector]
+    public BALL_TYPE type;
+
+    private Vector3 ballPosition;
 
     private Grid grid;
 
@@ -24,14 +52,27 @@ public class Ball : MonoBehaviour
         this.column = column;
         this.row = row;
 
-        tilePosition = new Vector3((column * grid.TILE_SIZE) - grid.GRID_OFFSET_X, grid.GRID_OFFSET_Y + (-row * grid.TILE_SIZE), 0);
-        transform.localPosition = tilePosition;
+        ballPosition = new Vector3((column * grid.TILE_SIZE) - grid.GRID_OFFSET_X, grid.GRID_OFFSET_Y + (-row * grid.TILE_SIZE), 0);
+        transform.localPosition = ballPosition;
 
         foreach (var go in colorsGO)
         {
             go.SetActive(false);
         }
-        colorsGO[0].SetActive(true);
     }
 
+    public void SetType(BALL_TYPE type)
+    {
+        foreach(var go in colorsGO)
+        {
+            go.SetActive(false);
+        }
+
+        this.type = type;
+
+        if (type == BALL_TYPE.NONE)
+            return;
+
+        colorsGO[(int)type].SetActive(true);
+    }
 }

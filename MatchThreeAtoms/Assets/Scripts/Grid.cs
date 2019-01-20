@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class Grid : MonoBehaviour
 {
-
     public int ROWS = 8;
 
     public int COLUMNS = 6;
@@ -19,12 +18,12 @@ public class Grid : MonoBehaviour
     [HideInInspector]
     public float GRID_OFFSET_Y = 0;
 
-
     [HideInInspector]
     public List<List<Ball>> gridBalls;
 
     void Start()
     {
+        //matchList = new List<Ball>();
         BuildGrid();
     }
 
@@ -32,26 +31,21 @@ public class Grid : MonoBehaviour
     {
         gridBalls = new List<List<Ball>>();
 
-
         GRID_OFFSET_X = (COLUMNS * TILE_SIZE) * 0.5f;
         GRID_OFFSET_Y = (ROWS * TILE_SIZE) * 0.5f;
 
         Debug.Log(GRID_OFFSET_X);
         Debug.Log(GRID_OFFSET_Y);
 
-
         GRID_OFFSET_X -= TILE_SIZE * 0.5f;
         GRID_OFFSET_Y -= TILE_SIZE * 0.5f;
 
         for (int column = 0; column < COLUMNS; column++)
         {
-
             var columnBalls = new List<Ball>();
 
             for (int row = 0; row < ROWS; row++)
             {
-
-
                 var item = Instantiate(gridBallGO) as GameObject;
                 var ball = item.GetComponent<Ball>();
 
@@ -62,6 +56,84 @@ public class Grid : MonoBehaviour
             gridBalls.Add(columnBalls);
         }
 
+        //build unique grid: no matches
+        for(var c = 0; c < COLUMNS; ++c)
+        {
+            for(var r = 0; r < ROWS; ++r)
+            {
+                if(c < 3)
+                {
+                    gridBalls[c][r].SetType(GetVerticalUnique(c, r));
+                }
+                else
+                {
+                    gridBalls[c][r].SetType(GetVerticalHorizontalUnique(c, r));
+                }
+            }
+        }
     }
 
+    void MakeGridUnique()
+    {
+        for (int column = 0; column < COLUMNS; ++column)
+        {
+            for (int row = 0; row < ROWS; ++row)
+            {
+                var ball = gridBalls[column][row];
+                ball.SetType(Ball.BALL_TYPE.NONE);
+            }
+        }
+
+        for(var c = 0; c < COLUMNS; ++c)
+        {
+            for(var r = 0; r < ROWS; ++r)
+            {
+                if(c < 2)
+                {
+                    gridBalls[c][r].SetType(GetVerticalUnique(c, r));
+                }
+                else
+                {
+                    gridBalls[c][r].SetType(GetVerticalHorizontalUnique(c, r));
+                }
+            }
+        }
+    }
+
+    Ball.BALL_TYPE GetVerticalHorizontalUnique(int col, int row)
+    {
+        var type = GetVerticalUnique(col, row);
+
+        if(gridBalls[col - 1][row].type == type && gridBalls[col - 2][row].type == type)
+        {
+            var unique = false;
+            while (!unique)
+            {
+                type = GetVerticalUnique(col, row);
+                if(gridBalls[col - 1][row].type == type && gridBalls[col - 2][row].type == type)
+                {
+
+                }
+                else
+                {
+                    unique = true;
+                }
+            }
+        }
+
+        return type;
+    }
+
+    Ball.BALL_TYPE GetVerticalUnique(int col, int row)
+    {
+        var type = Random.Range(0, 20);
+        var ballType = (Ball.BALL_TYPE)type;
+
+        if(row - 2 >= 0 && gridBalls[col][row - 1].type == ballType && gridBalls[col][row - 2].type == ballType)
+        {
+            type = (type + 1) % 20;
+        }
+
+        return (Ball.BALL_TYPE)type;
+    }
 }
