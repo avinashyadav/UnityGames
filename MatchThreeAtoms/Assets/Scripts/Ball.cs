@@ -41,10 +41,12 @@ public class Ball : MonoBehaviour
     [HideInInspector]
     public BALL_TYPE type;
 
+    [HideInInspector]
+    public bool touched;
+
     private Vector3 ballPosition;
 
     private Grid grid;
-
 
     public void SetBallPosition(Grid grid, int column, int row)
     {
@@ -60,6 +62,46 @@ public class Ball : MonoBehaviour
         {
             go.SetActive(false);
         }
+    }
+
+    public void Select(bool value)
+    {
+        foreach(var go in colorsGO)
+        {
+            var sp = go.GetComponent<SpriteRenderer>();
+            if (value)
+            {
+                sp.sortingLayerName = "Selection";
+            }
+            else
+            {
+                sp.sortingLayerName = "Grid";
+            }
+        }
+    }
+
+    public void ReturnToPosition()
+    {
+        GoKitLite.instance.positionTo(transform, 0.2f, ballPosition).setEaseType(EaseType.BackInOut);
+    }
+
+    public void Swap(Ball targetBall, System.Action callBack)
+    {
+        var targetType = targetBall.type;
+        var targetPosition = targetBall.transform.position;
+        var myType = type;
+
+        //swap them
+        SetType(targetType);
+        targetBall.SetType(myType);
+
+        targetBall.transform.position = transform.position;
+        transform.position = targetPosition;
+
+        GoKitLite.instance.positionTo(transform, 0.35f, ballPosition).setEaseType(EaseType.BackInOut);
+        GoKitLite.instance.positionTo(targetBall.transform, 0.35f, targetBall.ballPosition)
+            .setEaseType(EaseType.BackInOut)
+            .setCompletionHandler((Transform t) => { callBack(); });
     }
 
     public void Drop(System.Action<Ball> callBack)

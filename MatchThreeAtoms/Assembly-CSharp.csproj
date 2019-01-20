@@ -62,8 +62,14 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Ball.cs" />
     <Compile Include="Assets\Scripts\GameView.cs" />
+    <Compile Include="Assets\Scripts\GoKitLite\GoKitLite.cs" />
+    <Compile Include="Assets\Scripts\GoKitLite\GoKitLiteEaseType.cs" />
+    <Compile Include="Assets\Scripts\GoKitLite\GoKitLiteEasing.cs" />
+    <Compile Include="Assets\Scripts\GoKitLite\GoKitLitePropertyTweens.cs" />
+    <Compile Include="Assets\Scripts\GoKitLite\GoKitLiteTweenFlow.cs" />
     <Compile Include="Assets\Scripts\Grid.cs" />
     <Compile Include="Assets\Scripts\InputController.cs" />
+    <Compile Include="Assets\Scripts\Thumb.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>D:/GitHub/UnityGames/MatchThreeAtoms/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

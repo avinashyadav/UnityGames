@@ -21,11 +21,14 @@ public class Grid : MonoBehaviour
     [HideInInspector]
     public List<List<Ball>> gridBalls;
 
+    private List<Ball> matchList;
+
     private List<Ball> collapseTweens;
 
     void Start()
     {
-        //matchList = new List<Ball>();
+        matchList = new List<Ball>();
+
         BuildGrid();
     }
 
@@ -71,6 +74,116 @@ public class Grid : MonoBehaviour
                 {
                     gridBalls[c][r].SetType(GetVerticalHorizontalUnique(c, r));
                 }
+            }
+        }
+    }
+
+    public bool GridHasMatches()
+    {
+        matchList.Clear();
+
+        for(var c = 0; c < COLUMNS; ++c)
+        {
+            for(var r = 0; r < ROWS; ++r)
+            {
+                CheckTypeMatch(c, r);
+            }
+        }
+
+        if(matchList.Count > 2)
+        {
+            foreach(var b in matchList)
+            {
+                b.gameObject.SetActive(false);
+                //b.Opaque();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    void CheckTypeMatch(int c, int r)
+    {
+        if(matchList.Contains(gridBalls[c][r]))
+        {
+            return;
+        }
+
+        var type = gridBalls[c][r].type;
+        var stepC = c;
+        var stepR = r;
+        var tempMatches = new List<Ball>();
+
+        //check top
+        while(stepR - 1 >= 0 && gridBalls[c][stepR - 1].type == type)
+        {
+            --stepR;
+            tempMatches.Add(gridBalls[c][stepR]);
+        }
+
+        if(tempMatches.Count > 1)
+        {
+            tempMatches.Add(gridBalls[c][r]);
+            AddMatches(tempMatches);
+        }
+
+        tempMatches.Clear();
+
+        //check bottom
+        stepR = r;
+        while(stepR + 1 < ROWS && gridBalls[c][stepR+1].type == type)
+        {
+            ++stepR;
+            tempMatches.Add(gridBalls[c][stepR]);
+        }
+
+        if (tempMatches.Count > 1)
+        {
+            tempMatches.Add(gridBalls[c][r]);
+            AddMatches(tempMatches);
+        }
+
+        tempMatches.Clear();
+
+        //check left
+        while(stepC - 1 >= 0 && gridBalls[stepC - 1][r].type == type)
+        {
+            --stepC;
+            tempMatches.Add(gridBalls[stepC][r]);
+        }
+
+        if (tempMatches.Count > 1)
+        {
+            tempMatches.Add(gridBalls[c][r]);
+            AddMatches(tempMatches);
+        }
+
+        tempMatches.Clear();
+
+        //check right
+        stepC = c;
+        while(stepC + 1 < COLUMNS && gridBalls[stepC+1][r].type == type)
+        {
+            ++stepC;
+            tempMatches.Add(gridBalls[stepC][r]);
+        }
+
+        if (tempMatches.Count > 2)
+        {
+            tempMatches.Add(gridBalls[c][r]);
+            AddMatches(tempMatches);
+        }
+
+        tempMatches.Clear();
+    }
+
+    void AddMatches(List<Ball> matches)
+    {
+        foreach(var b in matches)
+        {
+            if (!matchList.Contains(b))
+            {
+                matchList.Add(b);
             }
         }
     }
@@ -141,11 +254,23 @@ public class Grid : MonoBehaviour
     
     public void CollapseGrid()
     {
-        collapseTweens = new List<Ball>();
-
-        for(var c = 0; c < COLUMNS; ++c)
+        if (GridHasMatches())
         {
-            CollapseColumn(gridBalls[c]);
+            collapseTweens = new List<Ball>();
+
+            foreach(var ball in matchList)
+            {
+                ball.gameObject.SetActive(false);
+            }
+
+            for(var c = 0; c < COLUMNS; ++c)
+            {
+                CollapseColumn(gridBalls[c]);
+            }
+        }
+        else
+        {
+            GameView.PAUSED = false;
         }
     }
 
