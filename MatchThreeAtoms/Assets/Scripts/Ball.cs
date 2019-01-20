@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Prime31.GoKitLite;
 
 public class Ball : MonoBehaviour
 {
@@ -59,6 +60,32 @@ public class Ball : MonoBehaviour
         {
             go.SetActive(false);
         }
+    }
+
+    public void Drop(System.Action<Ball> callBack)
+    {
+        gameObject.SetActive(true);
+        if(transform.position.y != ballPosition.y)
+        {
+            GoKitLite.instance.positionTo(transform, (transform.position.y - ballPosition.y) * 0.3f, ballPosition)
+                .setEaseType(EaseType.BackInOut)
+                .setCompletionHandler((Transform t) =>
+                {
+                    callBack(this);
+                });
+        }
+    }
+
+    public void MatchBallType(Ball ball)
+    {
+        SetType(ball.type);
+    }
+
+    public void SetTempPosition(int index)
+    {
+        var newPosition = ballPosition;
+        newPosition.y = grid.GRID_OFFSET_Y + (-index * grid.TILE_SIZE);
+        transform.localPosition = newPosition;
     }
 
     public void SetType(BALL_TYPE type)

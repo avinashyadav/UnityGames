@@ -21,6 +21,8 @@ public class Grid : MonoBehaviour
     [HideInInspector]
     public List<List<Ball>> gridBalls;
 
+    private List<Ball> collapseTweens;
+
     void Start()
     {
         //matchList = new List<Ball>();
@@ -100,6 +102,19 @@ public class Grid : MonoBehaviour
         }
     }
 
+    Ball.BALL_TYPE GetVerticalUnique(int col, int row)
+    {
+        var type = Random.Range(0, 20);
+        var ballType = (Ball.BALL_TYPE)type;
+
+        if (row - 2 >= 0 && gridBalls[col][row - 1].type == ballType && gridBalls[col][row - 2].type == ballType)
+        {
+            type = (type + 1) % 20;
+        }
+
+        return (Ball.BALL_TYPE)type;
+    }
+
     Ball.BALL_TYPE GetVerticalHorizontalUnique(int col, int row)
     {
         var type = GetVerticalUnique(col, row);
@@ -123,17 +138,84 @@ public class Grid : MonoBehaviour
 
         return type;
     }
-
-    Ball.BALL_TYPE GetVerticalUnique(int col, int row)
+    
+    public void CollapseGrid()
     {
-        var type = Random.Range(0, 20);
-        var ballType = (Ball.BALL_TYPE)type;
+        collapseTweens = new List<Ball>();
 
-        if(row - 2 >= 0 && gridBalls[col][row - 1].type == ballType && gridBalls[col][row - 2].type == ballType)
+        for(var c = 0; c < COLUMNS; ++c)
         {
-            type = (type + 1) % 20;
+            CollapseColumn(gridBalls[c]);
+        }
+    }
+
+    private void CollapseColumn(List<Ball> column)
+    {
+        var index = 0;
+
+        for(var i = column.Count - 1; i >= 0; --i)
+        {
+            var ball = column[i];
+
+            if (!ball.gameObject.activeSelf)
+            {
+                //find next visible
+                var newIndex = NextVisibleBall(column, i);
+                Debug.Log(newIndex);
+                if(newIndex == -1)
+                {
+                    index--;
+                    ball.SetType((Ball.BALL_TYPE) Random.Range(0, 20));
+                    ball.SetTempPosition(index);
+                }
+                else
+                {
+                    var nextBall = column[newIndex];
+                    ball.MatchBallType(nextBall);
+                    ball.SetTempPosition(newIndex);
+                    nextBall.gameObject.SetActive(false);
+                }
+                collapseTweens.Add(ball);
+            }
         }
 
-        return (Ball.BALL_TYPE)type;
+        for(var i =column.Count - 1; i >= 0; --i)
+        {
+            var ball = column[i];
+            ball.Drop(CollapseTweenDone);
+        }
+    }
+
+    private void CollapseTweenDone(Ball ball)
+    {
+        if (collapseTweens.Contains(ball))
+        {
+            collapseTweens.Remove(ball);
+        }
+
+        //are we done with all collapses?
+        if(collapseTweens.Count == 0)
+        {
+            Debug.Log("tween done");
+            CollapseGrid();
+        }
+    }
+
+    private int NextVisibleBall(List<Ball> column, int last)
+    {
+        if(last - 1 < 0)
+        {
+            return -1;
+        }
+
+        for(var i = last - 1; i >= 0; --i)
+        {
+            var ball = column[i];
+            if (ball.gameObject.activeSelf)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }

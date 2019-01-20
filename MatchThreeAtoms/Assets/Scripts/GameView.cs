@@ -19,13 +19,14 @@ public class GameView : MonoBehaviour
 
     private Vector2 worldViewTouch;
 
+    private int hiddenBalls = 0;
+
     void Start()
     {
 
         selectedBall = null;
 
     }
-
 
     public void HandleTouchDown(Vector2 touch)
     {
@@ -34,6 +35,12 @@ public class GameView : MonoBehaviour
         if (selectedBall != null)
         {
             selectedBall.gameObject.SetActive(false);
+            ++hiddenBalls;
+
+            //if(hiddenBalls > 6)
+            {
+                grid.CollapseGrid();
+            }
         }
 
     }
