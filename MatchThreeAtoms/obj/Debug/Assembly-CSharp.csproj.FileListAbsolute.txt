@@ -281,3 +281,4 @@ D:\GitHub\UnityGames\MatchThreeAtoms\obj\Debug\Assembly-CSharp.csproj.CoreCompil
 D:\GitHub\UnityGames\MatchThreeAtoms\obj\Debug\Assembly-CSharp.csproj.CopyComplete
 D:\GitHub\UnityGames\MatchThreeAtoms\obj\Debug\Assembly-CSharp.dll
 D:\GitHub\UnityGames\MatchThreeAtoms\obj\Debug\Assembly-CSharp.pdb
+D:\GitHub\UnityGames\MatchThreeAtoms\obj\Debug\Assembly-CSharp.csprojAssemblyReference.cache

@@ -193,7 +193,7 @@ public class GameView : MonoBehaviour
 
     private bool IsValidTarget(Ball ball)
     {
-        if(ball = selectedBall)
+        if(ball == selectedBall)
         {
             return false;
         }

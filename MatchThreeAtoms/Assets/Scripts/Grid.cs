@@ -13,6 +13,9 @@ public class Grid : MonoBehaviour
     public GameObject gridBallGO;
 
     [HideInInspector]
+    private int NO_OF_BALLS = 5;
+
+    [HideInInspector]
     public float GRID_OFFSET_X = 0;
 
     [HideInInspector]
@@ -173,8 +176,6 @@ public class Grid : MonoBehaviour
             tempMatches.Add(gridBalls[c][r]);
             AddMatches(tempMatches);
         }
-
-        tempMatches.Clear();
     }
 
     void AddMatches(List<Ball> matches)
@@ -188,41 +189,14 @@ public class Grid : MonoBehaviour
         }
     }
 
-    void MakeGridUnique()
-    {
-        for (int column = 0; column < COLUMNS; ++column)
-        {
-            for (int row = 0; row < ROWS; ++row)
-            {
-                var ball = gridBalls[column][row];
-                ball.SetType(Ball.BALL_TYPE.NONE);
-            }
-        }
-
-        for(var c = 0; c < COLUMNS; ++c)
-        {
-            for(var r = 0; r < ROWS; ++r)
-            {
-                if(c < 2)
-                {
-                    gridBalls[c][r].SetType(GetVerticalUnique(c, r));
-                }
-                else
-                {
-                    gridBalls[c][r].SetType(GetVerticalHorizontalUnique(c, r));
-                }
-            }
-        }
-    }
-
     Ball.BALL_TYPE GetVerticalUnique(int col, int row)
     {
-        var type = Random.Range(0, 20);
+        var type = Random.Range(0, NO_OF_BALLS);
         var ballType = (Ball.BALL_TYPE)type;
 
         if (row - 2 >= 0 && gridBalls[col][row - 1].type == ballType && gridBalls[col][row - 2].type == ballType)
         {
-            type = (type + 1) % 20;
+            type = (type + 1) % NO_OF_BALLS;
         }
 
         return (Ball.BALL_TYPE)type;
@@ -290,7 +264,7 @@ public class Grid : MonoBehaviour
                 if(newIndex == -1)
                 {
                     index--;
-                    ball.SetType((Ball.BALL_TYPE) Random.Range(0, 20));
+                    ball.SetType((Ball.BALL_TYPE) Random.Range(0, NO_OF_BALLS));
                     ball.SetTempPosition(index);
                 }
                 else
@@ -304,7 +278,7 @@ public class Grid : MonoBehaviour
             }
         }
 
-        for(var i =column.Count - 1; i >= 0; --i)
+        for(var i = column.Count - 1; i >= 0; --i)
         {
             var ball = column[i];
             ball.Drop(CollapseTweenDone);
