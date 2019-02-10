@@ -26,6 +26,8 @@ public class Grid : MonoBehaviour
 
     private List<Ball> matchList;
 
+    private int numberOfTurns = 1;
+
     private List<Ball> collapseTweens;
 
     void Start()
@@ -105,6 +107,15 @@ public class Grid : MonoBehaviour
         return false;
     }
 
+    bool DoTypesMatch(Ball.BALL_TYPE t1, Ball.BALL_TYPE t2)
+    {
+        return
+            (t1 == Ball.BALL_TYPE.TYPE_1 && t2 == Ball.BALL_TYPE.TYPE_1) || //H2
+            (t1 == Ball.BALL_TYPE.TYPE_1 && t2 == Ball.BALL_TYPE.TYPE_3) || //LiH
+            (t1 == Ball.BALL_TYPE.TYPE_3 && t2 == Ball.BALL_TYPE.TYPE_1) || //LiH
+            (t1 == t2 && (numberOfTurns % 5 == 0 || t1 != Ball.BALL_TYPE.TYPE_2));
+    }
+
     void CheckTypeMatch(int c, int r)
     {
         if(matchList.Contains(gridBalls[c][r]))
@@ -118,7 +129,7 @@ public class Grid : MonoBehaviour
         var tempMatches = new List<Ball>();
 
         //check top
-        while(stepR - 1 >= 0 && gridBalls[c][stepR - 1].type == type)
+        while(stepR - 1 >= 0 && DoTypesMatch(gridBalls[c][stepR - 1].type, type))
         {
             --stepR;
             tempMatches.Add(gridBalls[c][stepR]);
@@ -134,7 +145,7 @@ public class Grid : MonoBehaviour
 
         //check bottom
         stepR = r;
-        while(stepR + 1 < ROWS && gridBalls[c][stepR+1].type == type)
+        while(stepR + 1 < ROWS && DoTypesMatch(gridBalls[c][stepR+1].type, type))
         {
             ++stepR;
             tempMatches.Add(gridBalls[c][stepR]);
@@ -149,7 +160,7 @@ public class Grid : MonoBehaviour
         tempMatches.Clear();
 
         //check left
-        while(stepC - 1 >= 0 && gridBalls[stepC - 1][r].type == type)
+        while(stepC - 1 >= 0 && DoTypesMatch(gridBalls[stepC - 1][r].type, type))
         {
             --stepC;
             tempMatches.Add(gridBalls[stepC][r]);
@@ -165,7 +176,7 @@ public class Grid : MonoBehaviour
 
         //check right
         stepC = c;
-        while(stepC + 1 < COLUMNS && gridBalls[stepC+1][r].type == type)
+        while(stepC + 1 < COLUMNS && DoTypesMatch(gridBalls[stepC+1][r].type, type))
         {
             ++stepC;
             tempMatches.Add(gridBalls[stepC][r]);
@@ -241,6 +252,8 @@ public class Grid : MonoBehaviour
             {
                 CollapseColumn(gridBalls[c]);
             }
+
+            numberOfTurns = (numberOfTurns + 1) % 5;
         }
         else
         {
