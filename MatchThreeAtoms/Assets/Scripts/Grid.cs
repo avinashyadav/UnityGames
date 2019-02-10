@@ -13,7 +13,7 @@ public class Grid : MonoBehaviour
     public GameObject gridBallGO;
 
     [HideInInspector]
-    private int NO_OF_BALLS = 5;
+    private int NO_OF_BALL_TYPES = 5;
 
     [HideInInspector]
     public float GRID_OFFSET_X = 0;
@@ -60,27 +60,112 @@ public class Grid : MonoBehaviour
                 var ball = item.GetComponent<Ball>();
 
                 ball.SetBallPosition(this, column, row);
+                ball.SetType((Ball.BALL_TYPE)Random.Range(0, NO_OF_BALL_TYPES));
+
                 ball.transform.parent = gameObject.transform;
                 columnBalls.Add(ball);
             }
             gridBalls.Add(columnBalls);
         }
+    }
 
-        //build unique grid: no matches
-        for(var c = 0; c < COLUMNS; ++c)
+    public void CheckMatchesForBall(Ball ball)
+    {
+        matchList.Clear();
+
+        for(int column = 0; column < COLUMNS; ++column)
         {
-            for(var r = 0; r < ROWS; ++r)
+            for(int row = 0; row < ROWS; ++row)
             {
-                if(c < 3)
+                gridBalls[column][row].visited = false;
+            }
+        }
+
+        //search for matches around the ball
+        var initialResult = GetMatches(ball);
+        matchList.AddRange(initialResult);
+
+        while(true)
+        {
+            var allVisited = true;
+            for(var i = matchList.Count - 1; i >= 0; --i)
+            {
+                var b = matchList[i];
+                if(!b.visited)
                 {
-                    gridBalls[c][r].SetType(GetVerticalUnique(c, r));
+                    AddMatches(GetMatches(b));
+                    allVisited = false;
                 }
-                else
+            }
+
+            if(allVisited)
+            {
+                if(matchList.Count > 2)
                 {
-                    gridBalls[c][r].SetType(GetVerticalHorizontalUnique(c, r));
+                    CollapseGrid();
+                }
+                return;
+            }
+        }
+
+    }
+
+    List<Ball> GetMatches(Ball ball)
+    {
+        ball.visited = true;
+        var result = new List<Ball>() { ball };
+
+        //+column
+        if(ball.column + 1 < COLUMNS)
+        {
+            for(var r = -1; r <= 1; ++r)
+            {
+                if(ball.row + r >= 0 && ball.row + r < ROWS)
+                {
+                    if(DoTypesMatch(gridBalls[ball.column + 1][ball.row + r].type, ball.type))
+                    {
+                        result.Add(gridBalls[ball.column + 1][ball.row + r]);
+                    }
+                    ++r;
                 }
             }
         }
+
+        //-column
+        if (ball.column - 1 >= 0)
+        {
+            for (var r = -1; r <= 1; ++r)
+            {
+                if (ball.row + r >= 0 && ball.row + r < ROWS)
+                {
+                    if (DoTypesMatch(gridBalls[ball.column - 1][ball.row + r].type, ball.type))
+                    {
+                        result.Add(gridBalls[ball.column - 1][ball.row + r]);
+                    }
+                    ++r;
+                }
+            }
+        }
+
+        //top
+        if(ball.row - 1 >= 0)
+        {
+            if(DoTypesMatch(gridBalls[ball.column][ball.row - 1].type, ball.type))
+            {
+                result.Add(gridBalls[ball.column][ball.row - 1]);
+            }
+        }
+
+        //bottom
+        if (ball.row + 1 < ROWS)
+        {
+            if (DoTypesMatch(gridBalls[ball.column][ball.row + 1].type, ball.type))
+            {
+                result.Add(gridBalls[ball.column][ball.row + 1]);
+            }
+        }
+
+        return result;
     }
 
     public bool GridHasMatches()
@@ -109,11 +194,13 @@ public class Grid : MonoBehaviour
 
     bool DoTypesMatch(Ball.BALL_TYPE t1, Ball.BALL_TYPE t2)
     {
-        return
-            (t1 == Ball.BALL_TYPE.TYPE_1 && t2 == Ball.BALL_TYPE.TYPE_1) || //H2
-            (t1 == Ball.BALL_TYPE.TYPE_1 && t2 == Ball.BALL_TYPE.TYPE_3) || //LiH
-            (t1 == Ball.BALL_TYPE.TYPE_3 && t2 == Ball.BALL_TYPE.TYPE_1) || //LiH
-            (t1 == t2 && (numberOfTurns % 5 == 0 || t1 != Ball.BALL_TYPE.TYPE_2));
+        return t1 == t2;
+
+        //return
+        //    (t1 == Ball.BALL_TYPE.TYPE_1 && t2 == Ball.BALL_TYPE.TYPE_1) || //H2
+        //    (t1 == Ball.BALL_TYPE.TYPE_1 && t2 == Ball.BALL_TYPE.TYPE_3) || //LiH
+        //    (t1 == Ball.BALL_TYPE.TYPE_3 && t2 == Ball.BALL_TYPE.TYPE_1) || //LiH
+        //    (t1 == t2 && (numberOfTurns % 5 == 0 || t1 != Ball.BALL_TYPE.TYPE_2));
     }
 
     void CheckTypeMatch(int c, int r)
@@ -202,12 +289,12 @@ public class Grid : MonoBehaviour
 
     Ball.BALL_TYPE GetVerticalUnique(int col, int row)
     {
-        var type = Random.Range(0, NO_OF_BALLS);
+        var type = Random.Range(0, NO_OF_BALL_TYPES);
         var ballType = (Ball.BALL_TYPE)type;
 
         if (row - 2 >= 0 && gridBalls[col][row - 1].type == ballType && gridBalls[col][row - 2].type == ballType)
         {
-            type = (type + 1) % NO_OF_BALLS;
+            type = (type + 1) % NO_OF_BALL_TYPES;
         }
 
         return (Ball.BALL_TYPE)type;
@@ -277,7 +364,7 @@ public class Grid : MonoBehaviour
                 if(newIndex == -1)
                 {
                     index--;
-                    ball.SetType((Ball.BALL_TYPE) Random.Range(0, NO_OF_BALLS));
+                    ball.SetType((Ball.BALL_TYPE) Random.Range(0, NO_OF_BALL_TYPES));
                     ball.SetTempPosition(index);
                 }
                 else
@@ -309,7 +396,7 @@ public class Grid : MonoBehaviour
         if(collapseTweens.Count == 0)
         {
             Debug.Log("tween done");
-            CollapseGrid();
+            GameView.PAUSED = false;
         }
     }
 

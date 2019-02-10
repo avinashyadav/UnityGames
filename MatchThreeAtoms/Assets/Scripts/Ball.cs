@@ -48,6 +48,8 @@ public class Ball : MonoBehaviour
 
     private Grid grid;
 
+    public bool visited { get; internal set; }
+
     public void SetBallPosition(Grid grid, int column, int row)
     {
 

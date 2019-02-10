@@ -46,30 +46,7 @@ public class GameView : MonoBehaviour
 
         if (ball != null)
         {
-            if(selectedBall == null)
-            {
-                selectedBall = ball;
-                targetBall = null;
-            }
-            else
-            {
-                if (IsValidTarget(ball))
-                {
-                    PAUSED = true;
-                    targetBall = ball;
-                    SwapBalls();
-                }
-                else
-                {
-                    selectedBall = ball;
-                    targetBall = null;
-                }
-            }
-
-            if(selectedBall != null)
-            {
-                selectedBall.Select(true);
-            }
+            selectedBall = ball;
         }
     }
 
@@ -80,60 +57,19 @@ public class GameView : MonoBehaviour
             return;
         }
 
-        touchingDown = false;
-
         if(selectedBall == null)
         {
             return;
         }
 
-        if(targetBall == null)
-        {
-            selectedBall.ReturnToPosition();
-        }
-        else
-        {
-            PAUSED = true;
-            SwapBalls();
-        }
+        grid.CheckMatchesForBall(selectedBall);
 
-
+        selectedBall = null;
     }
 
     public void HandleTouchMove(Vector2 touch)
     {
-        if (PAUSED)
-        {
-            return;
-        }
-
-        this.worldViewTouch = Camera.main.ScreenToWorldPoint(touch);
-
-        if(selectedBall == null)
-        {
-            return;
-        }
-
-        var nextBall = BallCloseToPoint(touch);
-
-        if(nextBall != null && nextBall != selectedBall && nextBall.touched == true && IsValidTarget(nextBall))
-        {
-            PAUSED = true;
-            targetBall = nextBall;
-            SwapBalls();
-        }
-
-        if(selectedBall != null)
-        {
-            if(Vector2.Distance(selectedBall.transform.position, worldViewTouch) < 0.2f)
-            {
-                return;
-            }
-
-            selectedBall.transform.localPosition = this.worldViewTouch;
-        }
-
-        touchingDown = true;
+        
     }
 
     private void SwapBalls(bool reset = false)
