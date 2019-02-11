@@ -32,7 +32,7 @@ public class Grid : MonoBehaviour
 
     void Start()
     {
-        matchList = new List<Ball>();
+        //matchList = new List<Ball>();
 
         BuildGrid();
     }
@@ -66,6 +66,21 @@ public class Grid : MonoBehaviour
                 columnBalls.Add(ball);
             }
             gridBalls.Add(columnBalls);
+        }
+    }
+
+    internal void CollapseGrid(List<Ball> matches)
+    {
+        collapseTweens = new List<Ball>();
+
+        foreach(var ball in matches)
+        {
+            ball.gameObject.SetActive(false);
+        }
+
+        for(var c = 0; c < COLUMNS; ++c)
+        {
+            CollapseColumn(gridBalls[c]);
         }
     }
 
@@ -192,7 +207,7 @@ public class Grid : MonoBehaviour
         return false;
     }
 
-    bool DoTypesMatch(Ball.BALL_TYPE t1, Ball.BALL_TYPE t2)
+    public bool DoTypesMatch(Ball.BALL_TYPE t1, Ball.BALL_TYPE t2)
     {
         return t1 == t2;
 

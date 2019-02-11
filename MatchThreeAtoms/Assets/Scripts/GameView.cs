@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#define EIGHT_DIRECTIONAL
+
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,15 +24,16 @@ public class GameView : MonoBehaviour
 
     private Vector2 worldViewTouch;
 
-    private bool touchingDown;
-
     private Ball targetBall;
 
-    private int hiddenBalls = 0;
+    private List<Ball> selectedBalls;
+
+    private static float SIN_45 = Mathf.Sin(Mathf.PI * 0.25f);
 
     void Start()
     {
         selectedBall = null;
+        selectedBalls = new List<Ball>();
     }
 
     public void HandleTouchDown(Vector2 touch)
@@ -40,6 +43,13 @@ public class GameView : MonoBehaviour
             return;
         }
 
+        foreach(var b in selectedBalls)
+        {
+            b.ClearLine();
+        }
+
+        selectedBalls.Clear();
+
         this.worldViewTouch = Camera.main.ScreenToWorldPoint(touch);
 
         var ball = BallCloseToPoint(touch);
@@ -47,6 +57,7 @@ public class GameView : MonoBehaviour
         if (ball != null)
         {
             selectedBall = ball;
+            selectedBalls.Add(ball);
         }
     }
 
@@ -62,14 +73,68 @@ public class GameView : MonoBehaviour
             return;
         }
 
-        grid.CheckMatchesForBall(selectedBall);
-
+        selectedBall.ClearLine();
         selectedBall = null;
+
+        if(selectedBalls.Count > 2)
+        {
+            grid.CollapseGrid(selectedBalls);
+        }
+
+        foreach(var b in selectedBalls)
+        {
+            b.ClearLine();
+        }
+
+        selectedBalls.Clear();
     }
 
     public void HandleTouchMove(Vector2 touch)
     {
-        
+        if(PAUSED)
+        {
+            return;
+        }
+
+        this.worldViewTouch = Camera.main.ScreenToWorldPoint(touch);
+
+        if(selectedBall == null)
+        {
+            return;
+        }
+
+        var nextBall = BallCloseToPoint(touch);
+
+        if(nextBall != null && nextBall != selectedBall && nextBall.touched == true && nextBall.type == selectedBall.type && IsValidTarget(nextBall))
+        {
+            if(!selectedBalls.Contains(nextBall))
+            {
+                selectedBalls.Add(nextBall);
+                selectedBall = nextBall;
+            }
+        }
+
+        DrawSelection();
+    }
+
+    private void DrawSelection()
+    {
+        for(var i = 0; i < selectedBalls.Count; ++i)
+        {
+            var b = selectedBalls[i];
+            b.ClearLine();
+            if(selectedBalls.Count == 1)
+            {
+                b.DrawLine(worldViewTouch);
+            }
+            else
+            {
+                if(i != selectedBalls.Count - 1)
+                {
+                    b.DrawLine(selectedBalls[i + 1].transform.position);
+                }
+            }
+        }
     }
 
     private void SwapBalls(bool reset = false)
@@ -160,7 +225,7 @@ public class GameView : MonoBehaviour
 
         var diagonal = Mathf.Sin(Mathf.Atan2(Mathf.Pow(selectedBall.column - px, 2), Mathf.Pow(selectedBall.row - py, 2)));
 
-        if(diagonal != 0 && diagonal != 1)
+        if(diagonal != 0 && diagonal != 1 && diagonal != SIN_45)
         {
             offBounds = true;
         }
@@ -176,13 +241,5 @@ public class GameView : MonoBehaviour
     private void FixedUpdate()
     {
         thumb.transform.position = this.worldViewTouch;   
-    }
-
-    private void Update()
-    {
-        if(!PAUSED && selectedBall != null && touchingDown)
-        {
-            selectedBall.transform.position = this.worldViewTouch;
-        }
     }
 }

@@ -50,6 +50,8 @@ public class Ball : MonoBehaviour
 
     public bool visited { get; internal set; }
 
+    private LineRenderer lineRenderer;
+
     public void SetBallPosition(Grid grid, int column, int row)
     {
 
@@ -120,6 +122,22 @@ public class Ball : MonoBehaviour
         }
     }
 
+    public void ClearLine()
+    {
+        lineRenderer.SetPositions(new Vector3[] { });
+        lineRenderer.enabled = false;
+    }
+
+    public void DrawLine(Vector2 point)
+    {
+        lineRenderer.enabled = true;
+        lineRenderer.SetPositions(new Vector3[2]
+        {
+            transform.position,
+            point
+        });
+    }
+
     public void MatchBallType(Ball ball)
     {
         SetType(ball.type);
@@ -145,5 +163,10 @@ public class Ball : MonoBehaviour
             return;
 
         colorsGO[(int)type].SetActive(true);
+    }
+
+    void Start()
+    {
+        lineRenderer = GetComponent<LineRenderer>();
     }
 }
